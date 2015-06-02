@@ -47,7 +47,14 @@
   -->
     <section class="main-content">
       <h3>
-<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Enter web address.</h3>
+        <a id="welcome-to-github-pages"
+           class="anchor"
+           href="#welcome-to-github-pages"
+           aria-hidden="true">
+        <span class="octicon octicon-link"></span>
+        </a>
+        Enter web address, or a message.
+      </h3>
 
 <input
         id="text"
@@ -66,11 +73,6 @@ var qrcode = new QRCode();
 
 function makeCode() {
     var elText = document.getElementById("text");
-    if (!elText.value) {
-        alert("Input a text");
-        elText.focus();
-        return;
-    }
     var shorturl = URLShrink(elText.value);
     if (shorturl.search(/ALOE/i) >= 0) {
       //shorturl = "HTTP://VIMEO.COM/103879777";
