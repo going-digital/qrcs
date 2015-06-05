@@ -7,7 +7,7 @@ function URLShrink(url) {
   // Switch protocol and domain to upper case
   url = url.replace(/^(\w+:\/\/[^/]*)/i, function(v) { return v.toUpperCase();});
 
-  // Facebook rules
+  // Facebook rules- use the Facebook fb.me shortener
   if (
     url.search(/^https?:\/\/(www\.)?(facebook\.com|fb\.me)\/[\w0-9.]+(\?.*)?$/i) >= 0
   ) {
@@ -33,6 +33,13 @@ function URLShrink(url) {
     url = url.replace(/:\/\/www\./i, "://");
     // URLs are case insensitive
     url = url.toUpperCase();
+  }
+
+  // Youtube rules - use the Google youtu.be shortener
+  if (
+    url.search(/^https?:\/\/(www\.)?(youtube\.com)\/watch\?v=[a-z0-9]+$/i) >= 0
+  ) {
+    url = "HTTP://YOUTU.BE/" + url.match(/youtube\.com\/watch\?v=([a-zA-Z0-9]+)/i)[1]
   }
 
   return url;
