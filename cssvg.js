@@ -52,7 +52,7 @@ function csRender(data1) {
     svg.append("line").attr({
       x1: i, x2: i,
       y1: yMin, y2: yMax,
-      stroke: i%5 ? "grey" : "black",
+      stroke: i%5 ? "#ccf" : "#66c",
       "stroke-width": 0.05
     });
   }
@@ -60,7 +60,7 @@ function csRender(data1) {
     svg.append("line").attr({
       x1: xMin, x2: xMax,
       y1: i, y2: i,
-      stroke: i%5 ? "grey":"black",
+      stroke: i%5 ? "#ccf":"#66c",
       "stroke-width": 0.05
     });
   }
