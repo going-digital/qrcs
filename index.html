@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>QRCS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-title" content="QRCS">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400,700">
+    <link rel="stylesheet" type="text/css" href="min.css" media="screen">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="qr.min.js"></script>
+    <link rel="icon" sizes="192x192" href="img/qrcs192.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="img/qrcs180.png"/>
+    <link rel="apple-touch-icon" sizes="152x152" href="img/qrcs152.png"/>
+    <link rel="apple-touch-icon" sizes="144x144" href="img/qrcs144.png"/>
+    <link rel="icon" sizes="128x128" href="img/qrcs128.png"/>
+    <link rel="apple-touch-icon" sizes="120x120" href="img/qrcs120.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="img/qrcs114.png"/>
+    <link rel="apple-touch-icon" sizes="76x76" href="img/qrcs76.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="img/qrcs72.png"/>
+    <link rel="apple-touch-icon" sizes="57x57" href="img/qrcs57.png"/>
+    <script type="text/javascript" src="share.min.js"></script>
+  </head>
+  <body>
+    <section class="main-content">
+      <h3>
+        <a id="welcome-to-github-pages"
+           class="anchor"
+           href="#welcome-to-github-pages"
+           aria-hidden="true">
+        <span class="octicon octicon-link"></span>
+        </a>
+        Enter web address, or a message.
+      </h3>
+      <input
+        id="text"
+        type="text"
+        value="http://www.facebook.com/Cathedrow"
+        style="width:80%"
+        oninput="makeCode();"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="off"
+        onfocus="this.select();"
+        onmouseup="return false;"
+        autofocus
+        />
+      <a id="qrlink" target="_blank" title="Tap to preview code."><div id="qr"></div></a>
+      <div class="share-button"></div>
+      <script type="text/javascript">
+        var qrcode = new QRCode();
+        function getParameterByName(name) {
+          name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+          var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+          return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        function makeCode() {
+          var elText = document.getElementById("text");
+          var shorturl = URLShrink(elText.value);
+          // Update URL
+          if (shorturl.length == 0) {
+            shorturl = "HTTP://YOUTU.BE/dQw4w9WgXcQ";
+          }
+          // Map to javascript
+          if (shorturl.search(/https?:\/\//i) >= 0) {
+            // Its a web site
+            link = shorturl
+          } else {
+            link = "javascript:alert(document.getElementById(\"text\").value)"
+          }
+          var mode = "ALPHA_NUM";
+          if (shorturl != shorturl.toUpperCase()) {
+            mode = "8BIT";
+          }
+          document.getElementById("qrlink").setAttribute("href",link);
+          console.log(mode);
+          var qr = new QRCode(0, QRErrorCorrectLevel.L, mode);
+          console.log(shorturl)
+          qr.addData(shorturl);
+          qr.make();
+          var modules = qr.getModuleCount();
+          var data=[];
+          for (var row = 0; row < modules; row++) {
+            var line = "";
+            for (var col = 0; col < modules; col++) {
+              line = line + (qr.isDark(row, col) ? 'a' : ' ');
+            }
+            data.push(line);
+          }
+          csRender(data);
+        }
+        var queryUrl = getParameterByName('u');
+        if (queryUrl) {
+          document.getElementById("text").value = queryUrl;
+        }
+        makeCode();
+        new Share('.share-button');
+      </script>
+      <h4>What's this?</h4>
+      <p>A pattern for a smart-phone scannable cross-stitch.
+        Download a <a href="http://redlaser.com">QR reader app</a> and get stitching!
+        They come out at about 2" square on 14 count aida.
+        These codes also work with Fair Isle knitting, or papercrafting.
+      </p>
+      <h4>Why is this special?</h4>
+      <p>There are other QR code generators, but this one:
+        <li>Uses URL formatters to make smaller codes.</li>
+        <li>Maximises error correction for more reliable reads.</li>
+        <li>Generates embroidery friendly charts.</li>
+      </p>
+      <h4>Bookmark this!</h4>
+      <p>If you add this to your home screen, you can have barcode patterns on-the-go!</p>
+      <h4>Found a bug?</h4>
+      <p>Tell me <a href="https://github.com/going-digital/qrcs/issues">here</a> or message me on <a href="http://facebook.com/Cathedrow">Facebook</a>.</p>
+      <h4>Credits</h4>
+      <p>Written by <a href="http://facebook.com/Cathedrow">Peter</a>, derived from <a href="https://github.com/janantala/qrcode.js">Jan Antala's QR library</a>. MIT Licensed.</p>
+      <!--
+            <footer class="site-footer">
+              <span class="site-footer-owner"><a href="https://github.com/going-digital/qrcs">Qrcs</a> is maintained by <a href="https://github.com/going-digital">going-digital</a>.</span>
+
+              <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+            </footer>
+      -->
+    </section>
+  </body>
+</html>
