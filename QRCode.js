@@ -27,11 +27,14 @@ function QRCode(typeNumber, errorCorrectLevel, inputMode) {
   this.dataList = [];
 }
 
+/**
+* @param {Object} data
+*/
 QRCode.prototype.addData = function(data) {
   var newData;
-  if (this.inputMode === "NUMBER") {
+  if (this.inputMode === 'NUMBER') {
     newData = new NUMBER(data);
-  } else if (this.inputMode === "ALPHA_NUM") {
+  } else if (this.inputMode === 'ALPHA_NUM') {
     newData = new ALPHA_NUM(data);
   } else {
     newData = new QR8bitByte(data);
@@ -40,26 +43,46 @@ QRCode.prototype.addData = function(data) {
   this.dataCache = null;
 };
 
+/**
+* @param {Number} row
+* @param {Number} col
+* @return {Bool}
+*/
 QRCode.prototype.isDark = function(row, col) {
-  if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
-    throw new Error(row + "," + col);
+  if (
+    row < 0 ||
+    this.moduleCount <= row ||
+    col < 0 ||
+    this.moduleCount <= col
+  ) {
+    throw new Error(row + ',' + col);
   }
   return this.modules[row][col];
 };
 
+/**
+* @return {Number}
+*/
 QRCode.prototype.getModuleCount = function() {
   return this.moduleCount;
 };
 
+/**
+* @param {Number} version
+* @param {Number} errorCorrectLevel
+* @return {Number}
+*/
 QRCode.prototype.symbolCapacity = function(version, errorCorrectLevel) {
   var rsBlocks = QRRSBlock.getRSBlocks(version, errorCorrectLevel);
   var totalDataCount = 0;
-  for (i=0; i < rsBlocks.length; i++) {
+  for (i = 0; i < rsBlocks.length; i++) {
     totalDataCount += rsBlocks[i].dataCount;
   }
-  return totalDataCount*8;
+  return totalDataCount * 8;
 };
 
+/**
+*/
 QRCode.prototype.make = function() {
   var i;
   // Calculate automatically typeNumber if provided is < 1
@@ -70,10 +93,13 @@ QRCode.prototype.make = function() {
       if (typeNumber == 1 || typeNumber == 10 || typeNumber == 27) {
         // Calculate at versions 1, 10 and 27 where encoding changes
         var buffer = new QRBitBuffer();
-        for (i=0; i < this.dataList.length; i++) {
+        for (i = 0; i < this.dataList.length; i++) {
           var data = this.dataList[i];
           buffer.put(data.mode, 4);
-          buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber));
+          buffer.put(
+              data.getLength(),
+              QRUtil.getLengthInBits(data.mode, typeNumber)
+          );
           data.write(buffer);
         }
         var dataSize = buffer.getLengthInBits();
@@ -92,41 +118,23 @@ QRCode.prototype.make = function() {
       QRErrorCorrectLevel.M,
       QRErrorCorrectLevel.L
     ];
-    for (var i=0; i < eccSizes.length; i++) {
+    for (var i = 0; i < eccSizes.length; i++) {
       this.errorCorrectLevel = eccSizes[i];
       var symbolSize = this.symbolCapacity(typeNumber, this.errorCorrectLevel);
       if (dataSize <= symbolSize) {
         break;
       }
     }
-    console.log(this.typeNumber+"MLHQ"[this.errorCorrectLevel]);
+    console.log(this.typeNumber + 'MLHQ'[this.errorCorrectLevel]);
 
-    /* Old symbol sizer
-    var typeNumber = 1;
-
-    for (typeNumber = 1; typeNumber < 40; typeNumber++) {
-      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
-      var buffer = new QRBitBuffer();
-      var totalDataCount = 0;
-      for (i = 0; i < rsBlocks.length; i++) {
-        totalDataCount += rsBlocks[i].dataCount;
-      }
-      for (i = 0; i < this.dataList.length; i++) {
-        var data = this.dataList[i];
-        buffer.put(data.mode, 4);
-        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber));
-        data.write(buffer);
-      }
-      if (buffer.getLengthInBits() <= totalDataCount * 8) {
-        break;
-      }
-    }
-    this.typeNumber = typeNumber;
-    */
   }
   this.makeImpl(false, this.getBestMaskPattern());
 };
 
+/**
+* @param {Object} test
+* @param {Object} maskPattern
+*/
 QRCode.prototype.makeImpl = function(test, maskPattern) {
   this.moduleCount = this.typeNumber * 4 + 17;
   this.modules = new Array(this.moduleCount);
@@ -148,26 +156,34 @@ QRCode.prototype.makeImpl = function(test, maskPattern) {
   }
 
   if (this.dataCache === null) {
-    this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+    this.dataCache = QRCode.createData(
+      this.typeNumber,
+      this.errorCorrectLevel,
+      this.dataList
+    );
   }
 
   this.mapData(this.dataCache, maskPattern);
 };
 
+/**
+* @param {Number} row
+* @param {Number} col
+*/
 QRCode.prototype.setupPositionProbePattern = function(row, col) {
   for (var r = -1; r <= 7; r++) {
-
     if (row + r <= -1 || this.moduleCount <= row + r) {
       continue;
     }
-
     for (var c = -1; c <= 7; c++) {
-
       if (col + c <= -1 || this.moduleCount <= col + c) {
         continue;
       }
-
-      if ((0 <= r && r <= 6 && (c === 0 || c === 6)) || (0 <= c && c <= 6 && (r === 0 || r === 6)) || (2 <= r && r <= 4 && 2 <= c && c <= 4)) {
+      if (
+        (0 <= r && r <= 6 && (c === 0 || c === 6)) ||
+        (0 <= c && c <= 6 && (r === 0 || r === 6)) ||
+        (2 <= r && r <= 4 && 2 <= c && c <= 4)
+      ) {
         this.modules[row + r][col + c] = true;
       } else {
         this.modules[row + r][col + c] = false;
@@ -176,42 +192,38 @@ QRCode.prototype.setupPositionProbePattern = function(row, col) {
   }
 };
 
+/**
+* @return {Number}
+*/
 QRCode.prototype.getBestMaskPattern = function() {
-
   var minLostPoint = 0;
   var pattern = 0;
-
   for (var i = 0; i < 8; i++) {
-
     this.makeImpl(true, i);
-
     var lostPoint = QRUtil.getLostPoint(this);
-
     if (i === 0 || minLostPoint > lostPoint) {
       minLostPoint = lostPoint;
       pattern = i;
     }
   }
-
   return pattern;
 };
 
+/**
+* @param {Object} targetMc
+* @param {Object} instanceName
+* @param {Object} depth
+* @return {Object}
+*/
 QRCode.prototype.createMovieClip = function(targetMc, instanceName, depth) {
-
   var qrMc = targetMc.createEmptyMovieClip(instanceName, depth);
   var cs = 1;
-
   this.make();
-
   for (var row = 0; row < this.modules.length; row++) {
-
     var y = row * cs;
-
     for (var col = 0; col < this.modules[row].length; col++) {
-
       var x = col * cs;
       var dark = this.modules[row][col];
-
       if (dark) {
         qrMc.beginFill(0, 100);
         qrMc.moveTo(x, y);
@@ -222,19 +234,18 @@ QRCode.prototype.createMovieClip = function(targetMc, instanceName, depth) {
       }
     }
   }
-
   return qrMc;
 };
 
+/**
+*/
 QRCode.prototype.setupTimingPattern = function() {
-
   for (var r = 8; r < this.moduleCount - 8; r++) {
     if (this.modules[r][6] !== null) {
       continue;
     }
     this.modules[r][6] = (r % 2 === 0);
   }
-
   for (var c = 8; c < this.moduleCount - 8; c++) {
     if (this.modules[6][c] !== null) {
       continue;
@@ -243,57 +254,65 @@ QRCode.prototype.setupTimingPattern = function() {
   }
 };
 
+/**
+*/
 QRCode.prototype.setupPositionAdjustPattern = function() {
-    var pos = QRUtil.getPatternPosition(this.typeNumber);
-    for (var i = 0; i < pos.length; i++) {
-      for (var j = 0; j < pos.length; j++) {
-        var row = pos[i];
-        var col = pos[j];
-        if (this.modules[row][col] !== null) {
-          continue;
-        }
-        for (var r = -2; r <= 2; r++) {
-          for (var c = -2; c <= 2; c++) {
-            if (r === -2 || r === 2 || c === -2 || c === 2 || (r === 0 && c === 0)) {
-              this.modules[row + r][col + c] = true;
-            } else {
-              this.modules[row + r][col + c] = false;
-            }
+  var pos = QRUtil.getPatternPosition(this.typeNumber);
+  for (var i = 0; i < pos.length; i++) {
+    for (var j = 0; j < pos.length; j++) {
+      var row = pos[i];
+      var col = pos[j];
+      if (this.modules[row][col] !== null) {
+        continue;
+      }
+      for (var r = -2; r <= 2; r++) {
+        for (var c = -2; c <= 2; c++) {
+          if (
+            r === -2 ||
+            r === 2 ||
+            c === -2 ||
+            c === 2 ||
+            (r === 0 && c === 0)
+          ) {
+            this.modules[row + r][col + c] = true;
+          } else {
+            this.modules[row + r][col + c] = false;
           }
         }
       }
     }
-  },
+  }
+};
 
-  QRCode.prototype.setupTypeNumber = function(test) {
+/**
+* @param {Number} test
+*/
+QRCode.prototype.setupTypeNumber = function(test) {
+  var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+  var mod;
+  var i;
+  for (i = 0; i < 18; i++) {
+    mod = (!test && ((bits >> i) & 1) === 1);
+    this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+  }
+  for (i = 0; i < 18; i++) {
+    mod = (!test && ((bits >> i) & 1) === 1);
+    this.modules[i % 3 + this.moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+  }
+};
 
-    var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
-    var mod;
-    var i;
-
-    for (i = 0; i < 18; i++) {
-      mod = (!test && ((bits >> i) & 1) === 1);
-      this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
-    }
-
-    for (i = 0; i < 18; i++) {
-      mod = (!test && ((bits >> i) & 1) === 1);
-      this.modules[i % 3 + this.moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
-    }
-  };
-
+/**
+* @param {Object} test
+* @param {Number} maskPattern
+*/
 QRCode.prototype.setupTypeInfo = function(test, maskPattern) {
-
   var data = (this.errorCorrectLevel << 3) | maskPattern;
   var bits = QRUtil.getBCHTypeInfo(data);
   var mod;
   var i;
-
   // vertical
   for (i = 0; i < 15; i++) {
-
     mod = (!test && ((bits >> i) & 1) === 1);
-
     if (i < 6) {
       this.modules[i][8] = mod;
     } else if (i < 8) {
@@ -302,12 +321,9 @@ QRCode.prototype.setupTypeInfo = function(test, maskPattern) {
       this.modules[this.moduleCount - 15 + i][8] = mod;
     }
   }
-
   // horizontal
   for (i = 0; i < 15; i++) {
-
     mod = (!test && ((bits >> i) & 1) === 1);
-
     if (i < 8) {
       this.modules[8][this.moduleCount - i - 1] = mod;
     } else if (i < 9) {
@@ -316,19 +332,19 @@ QRCode.prototype.setupTypeInfo = function(test, maskPattern) {
       this.modules[8][15 - i - 1] = mod;
     }
   }
-
   // fixed module
   this.modules[this.moduleCount - 8][8] = (!test);
-
 };
 
+/**
+* @param {Number} data
+* @param {Number} maskPattern
+*/
 QRCode.prototype.mapData = function(data, maskPattern) {
-
   var inc = -1;
   var row = this.moduleCount - 1;
   var bitIndex = 7;
   var byteIndex = 0;
-
   for (var col = this.moduleCount - 1; col > 0; col -= 2) {
     if (col === 6) {
       col--;
@@ -365,6 +381,12 @@ QRCode.prototype.mapData = function(data, maskPattern) {
 QRCode.PAD0 = 0xEC;
 QRCode.PAD1 = 0x11;
 
+/**
+* @param {Number} typeNumber
+* @param {Number} errorCorrectLevel
+* @param {Array} dataList
+* @return {Object}
+*/
 QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
   var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
   var buffer = new QRBitBuffer();
@@ -381,7 +403,13 @@ QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
   }
 
   if (buffer.getLengthInBits() > totalDataCount * 8) {
-    throw new Error("code length overflow. (" + buffer.getLengthInBits() + ">" + totalDataCount * 8 + ")");
+    throw new Error(
+      'code length overflow. (' +
+      buffer.getLengthInBits() +
+      '>' +
+      totalDataCount * 8 +
+      ')'
+    );
   }
   if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
     buffer.put(0, 4);
@@ -402,6 +430,11 @@ QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
   return QRCode.createBytes(buffer, rsBlocks);
 };
 
+/**
+* @param {Number} buffer
+* @param {Number} rsBlocks
+* @return {Array}
+*/
 QRCode.createBytes = function(buffer, rsBlocks) {
   var offset = 0;
   var maxDcCount = 0;
